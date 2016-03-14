@@ -1,14 +1,15 @@
 <?php
- 
+
+namespace Masterclass\Controller;
+
+use PDO;
+
 class Index {
     
     protected $db;
     
-    public function __construct($config) {
-        $dbconfig = $config['database'];
-        $dsn = 'mysql:host=' . $dbconfig['host'] . ';dbname=' . $dbconfig['name'];
-        $this->db = new PDO($dsn, $dbconfig['user'], $dbconfig['pass']);
-        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    public function __construct(PDO $db) {
+        $this->db = $db;
     }
     
     public function index() {
@@ -36,7 +37,7 @@ class Index {
         
         $content .= '</ol>';
         
-        require 'layout.phtml';
+        require realpath(__DIR__.'/../../layout.phtml');
     }
 }
 

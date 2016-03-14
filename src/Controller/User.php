@@ -1,14 +1,15 @@
 <?php
 
+namespace Masterclass\Controller;
+
+use PDO;
+
 class User {
     
     public $db;
     
-    public function __construct($config) {
-        $dbconfig = $config['database'];
-        $dsn = 'mysql:host=' . $dbconfig['host'] . ';dbname=' . $dbconfig['name'];
-        $this->db = new PDO($dsn, $dbconfig['user'], $dbconfig['pass']);
-        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    public function __construct(PDO $db) {
+        $this->db = $db;
     }
     
     public function create() {
@@ -68,8 +69,8 @@ class User {
                 <input type="submit" name="create" value="Create User" />
             </form>
         ';
-        
-        require_once 'layout.phtml';
+
+        require realpath(__DIR__.'/../../layout.phtml');
         
     }
     
@@ -113,8 +114,8 @@ class User {
             <label>Password Again</label> <input type="password" name="password_check" value="" /><br />
             <input type="submit" name="updatepw" value="Create User" />
         </form>';
-        
-        require_once 'layout.phtml';
+
+        require realpath(__DIR__.'/../../layout.phtml');
     }
     
     public function login() {
@@ -148,8 +149,8 @@ class User {
                 <input type="submit" name="login" value="Log In" />
             </form>
         ';
-        
-        require_once('layout.phtml');
+
+        require realpath(__DIR__.'/../../layout.phtml');
         
     }
     

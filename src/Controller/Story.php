@@ -1,12 +1,13 @@
 <?php
 
+namespace Masterclass\Controller;
+
+use PDO;
+
 class Story {
     
-    public function __construct($config) {
-        $dbconfig = $config['database'];
-        $dsn = 'mysql:host=' . $dbconfig['host'] . ';dbname=' . $dbconfig['name'];
-        $this->db = new PDO($dsn, $dbconfig['user'], $dbconfig['pass']);
-        $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    public function __construct(PDO $db) {
+        $this->db = $db;
     }
     
     public function index() {
@@ -54,8 +55,8 @@ class Story {
                 ' . $comment['comment'] . '</div>
             ';
         }
-        
-        require_once 'layout.phtml';
+
+        require realpath(__DIR__.'/../../layout.phtml');
         
     }
     
@@ -94,8 +95,8 @@ class Story {
                 <input type="submit" name="create" value="Create" />
             </form>
         ';
-        
-        require_once 'layout.phtml';
+
+        require realpath(__DIR__.'/../../layout.phtml');
     }
     
 }

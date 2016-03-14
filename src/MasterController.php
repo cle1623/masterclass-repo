@@ -1,9 +1,13 @@
 <?php
 
+namespace Masterclass;
+
+use PDO;
+
 class MasterController {
     
     private $config;
-    
+
     public function __construct($config) {
         $this->_setupConfig($config);
     }
@@ -13,7 +17,13 @@ class MasterController {
         $call_class = $call['call'];
         $class = ucfirst(array_shift($call_class));
         $method = array_shift($call_class);
-        $o = new $class($this->config);
+
+        $dbconfig = $this->config['database'];
+        $dsn = 'mysql:host=' . $dbconfig['host'] . ';dbname=' . $dbconfig['name'];
+        $db = new PDO($dsn, $dbconfig['user'], $dbconfig['pass']);
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $o = new $class($db);
         return $o->$method();
     }
     
