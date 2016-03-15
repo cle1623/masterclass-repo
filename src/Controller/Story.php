@@ -2,43 +2,54 @@
 
 namespace Masterclass\Controller;
 
-use PDO;
+use Masterclass\Model\Story as ModelStory;
+use Masterclass\Model\Comment as ModelComment;
 
-class Story {
-    
-    public function __construct(PDO $db) {
-        $this->db = $db;
+/**
+ * Story Controller for Masterclass
+ * @package Masterclass\Model
+ */
+class Story
+{
+
+    /**
+     * @var ModelStory
+     */
+    protected $modal_story;
+
+    /**
+     * @var ModelComment
+     */
+    protected $model_comment;
+
+    public function __construct(ModelStory $story, ModelComment $comment)
+    {
+        $this->model_story = $story;
+        $this->model_comment = $comment;
     }
-    
-    public function index() {
-        if(!isset($_GET['id'])) {
+
+    public function index()
+    {
+        if (!isset($_GET['id'])) {
             header("Location: /");
             exit;
         }
-        
-        $story_sql = 'SELECT * FROM story WHERE id = ?';
-        $story_stmt = $this->db->prepare($story_sql);
-        $story_stmt->execute(array($_GET['id']));
-        if($story_stmt->rowCount() < 1) {
+
+        $story = $this->model_story->getStory($_GET['id']);
+        if (empty($story)) {
             header("Location: /");
             exit;
         }
-        
-        $story = $story_stmt->fetch(PDO::FETCH_ASSOC);
-        
-        $comment_sql = 'SELECT * FROM comment WHERE story_id = ?';
-        $comment_stmt = $this->db->prepare($comment_sql);
-        $comment_stmt->execute(array($story['id']));
-        $comment_count = $comment_stmt->rowCount();
-        $comments = $comment_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $comments = $this->model_comment->getCommentsByStoryId($story['id']);
 
         $content = '
             <a class="headline" href="' . $story['url'] . '">' . $story['headline'] . '</a><br />
-            <span class="details">' . $story['created_by'] . ' | ' . $comment_count . ' Comments | 
+            <span class="details">' . $story['created_by'] . ' | ' . count($comments) . ' Comments |
             ' . date('n/j/Y g:i a', strtotime($story['created_on'])) . '</span>
         ';
-        
-        if(isset($_SESSION['AUTHENTICATED'])) {
+
+        if (isset($_SESSION['AUTHENTICATED'])) {
             $content .= '
             <form method="post" action="/comment/create">
             <input type="hidden" name="story_id" value="' . $_GET['id'] . '" />
@@ -47,8 +58,8 @@ class Story {
             </form>            
             ';
         }
-        
-        foreach($comments as $comment) {
+
+        foreach ($comments as $comment) {
             $content .= '
                 <div class="comment"><span class="comment_details">' . $comment['created_by'] . ' | ' .
                 date('n/j/Y g:i a', strtotime($story['created_on'])) . '</span>
@@ -56,36 +67,30 @@ class Story {
             ';
         }
 
-        require realpath(__DIR__.'/../../layout.phtml');
-        
+        require realpath(__DIR__ . '/../../layout.phtml');
+
     }
-    
-    public function create() {
-        if(!isset($_SESSION['AUTHENTICATED'])) {
+
+    public function create()
+    {
+        if (!isset($_SESSION['AUTHENTICATED'])) {
             header("Location: /user/login");
             exit;
         }
-        
+
         $error = '';
-        if(isset($_POST['create'])) {
-            if(!isset($_POST['headline']) || !isset($_POST['url']) ||
-               !filter_input(INPUT_POST, 'url', FILTER_VALIDATE_URL)) {
-                $error = 'You did not fill in all the fields or the URL did not validate.';       
+        if (isset($_POST['create'])) {
+            if (!isset($_POST['headline']) || !isset($_POST['url']) ||
+                !filter_input(INPUT_POST, 'url', FILTER_VALIDATE_URL)
+            ) {
+                $error = 'You did not fill in all the fields or the URL did not validate.';
             } else {
-                $sql = 'INSERT INTO story (headline, url, created_by, created_on) VALUES (?, ?, ?, NOW())';
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute(array(
-                   $_POST['headline'],
-                   $_POST['url'],
-                   $_SESSION['username'],
-                ));
-                
-                $id = $this->db->lastInsertId();
+                $id = $this->model_story->insertStory($_POST['headline'], $_POST['url'], $_SESSION['username']);
                 header("Location: /story/?id=$id");
                 exit;
             }
         }
-        
+
         $content = '
             <form method="post">
                 ' . $error . '<br />
@@ -96,7 +101,7 @@ class Story {
             </form>
         ';
 
-        require realpath(__DIR__.'/../../layout.phtml');
+        require realpath(__DIR__ . '/../../layout.phtml');
     }
-    
+
 }
