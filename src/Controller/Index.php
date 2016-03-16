@@ -14,11 +14,11 @@ class Index
     /**
      * @var ModelStory
      */
-    protected $modal_story;
+    protected $model_story;
 
     public function __construct(ModelStory $story)
     {
-        $this->modal_story = $story;
+        $this->model_story = $story;
     }
 
     /**
@@ -26,7 +26,7 @@ class Index
      */
     public function index()
     {
-        $stories = $this->modal_story->getStories();
+        $stories = $this->model_story->getStories();
 
         $content = '<ol>';
 
