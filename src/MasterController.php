@@ -2,10 +2,7 @@
 
 namespace Masterclass;
 
-use PDO;
-use Masterclass\Model\Story as ModelStory;
-use Masterclass\Model\Comment as ModelComment;
-use Masterclass\Model\User as ModelUser;
+use Aura\Di\Container;
 
 /**
  * MasterController for Masterclass
@@ -14,11 +11,14 @@ use Masterclass\Model\User as ModelUser;
 class MasterController
 {
 
-    private $config;
+    protected $config;
 
-    public function __construct($config)
+    protected $container;
+
+    public function __construct(Container $container, $config)
     {
-        $this->_setupConfig($config);
+        $this->config = $config;
+        $this->container = $container;
     }
 
     public function execute()
@@ -27,35 +27,8 @@ class MasterController
         $call_class = $call['call'];
         $class = array_shift($call_class);
         $method = array_shift($call_class);
-
-        $dbconfig = $this->config['database'];
-        $dsn = 'mysql:host=' . $dbconfig['host'] . ';dbname=' . $dbconfig['name'];
-        $db = new PDO($dsn, $dbconfig['user'], $dbconfig['pass']);
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        switch ($class) {
-            case 'Masterclass\Controller\Comment':
-                $comment = new ModelComment($db);
-                $o = new $class($comment);
-                break;
-            case 'Masterclass\Controller\Index':
-                $story = new ModelStory($db);
-                $o = new $class($story);
-                break;
-            case 'Masterclass\Controller\Story':
-                $story = new ModelStory($db);
-                $comment = new ModelComment($db);
-                $o = new $class($story, $comment);
-                break;
-            case 'Masterclass\Controller\User':
-                $user = new ModelUser($db);
-                $o = new $class($user);
-                break;
-            default:
-                $o = new $class($db);
-                break;
-        }
-        return $o->$method();
+        $controllerObject = $this->container->newInstance($class);
+        return $controllerObject->$method();
     }
 
     private function _determineControllers()
@@ -83,11 +56,6 @@ class MasterController
         }
 
         return $return;
-    }
-
-    private function _setupConfig($config)
-    {
-        $this->config = $config;
     }
 
 }
