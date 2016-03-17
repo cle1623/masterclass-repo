@@ -2,31 +2,35 @@
 
 namespace Masterclass;
 
-use PDO;
+use Aura\Di\Container;
 
-class MasterController {
-    
-    private $config;
+/**
+ * MasterController for Masterclass
+ * @package Masterclass
+ */
+class MasterController
+{
 
-    public function __construct($config) {
-        $this->_setupConfig($config);
+    protected $config;
+
+    protected $container;
+
+    public function __construct(Container $container, $config)
+    {
+        $this->config = $config;
+        $this->container = $container;
     }
-    
-    public function execute() {
+
+    public function execute()
+    {
         $call = $this->_determineControllers();
         $call_class = $call['call'];
-        $class = ucfirst(array_shift($call_class));
+        $class = array_shift($call_class);
         $method = array_shift($call_class);
-
-        $dbconfig = $this->config['database'];
-        $dsn = 'mysql:host=' . $dbconfig['host'] . ';dbname=' . $dbconfig['name'];
-        $db = new PDO($dsn, $dbconfig['user'], $dbconfig['pass']);
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        $o = new $class($db);
-        return $o->$method();
+        $controllerObject = $this->container->newInstance($class);
+        return $controllerObject->$method();
     }
-    
+
     private function _determineControllers()
     {
         if (isset($_SERVER['REDIRECT_BASE'])) {
@@ -34,16 +38,15 @@ class MasterController {
         } else {
             $rb = '';
         }
-        
+
         $ruri = $_SERVER['REQUEST_URI'];
         $path = str_replace($rb, '', $ruri);
         $return = array();
-        
-        foreach($this->config['routes'] as $k => $v) {
+
+        foreach ($this->config['routes'] as $k => $v) {
             $matches = array();
             $pattern = '$' . $k . '$';
-            if(preg_match($pattern, $path, $matches))
-            {
+            if (preg_match($pattern, $path, $matches)) {
                 $controller_details = $v;
                 $path_string = array_shift($matches);
                 $arguments = $matches;
@@ -51,12 +54,8 @@ class MasterController {
                 $return = array('call' => $controller_method);
             }
         }
-        
+
         return $return;
     }
-    
-    private function _setupConfig($config) {
-        $this->config = $config;
-    }
-    
+
 }

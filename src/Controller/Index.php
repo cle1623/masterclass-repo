@@ -2,42 +2,47 @@
 
 namespace Masterclass\Controller;
 
-use PDO;
+use Masterclass\Model\Story as ModelStory;
 
-class Index {
-    
-    protected $db;
-    
-    public function __construct(PDO $db) {
-        $this->db = $db;
+/**
+ * Index Controller for Masterclass
+ * @package Masterclass\Model
+ */
+class Index
+{
+
+    /**
+     * @var ModelStory
+     */
+    protected $model_story;
+
+    public function __construct(ModelStory $story)
+    {
+        $this->model_story = $story;
     }
-    
-    public function index() {
-        
-        $sql = 'SELECT * FROM story ORDER BY created_on DESC';
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        $stories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
+    /**
+     * display index
+     */
+    public function index()
+    {
+        $stories = $this->model_story->getStories();
+
         $content = '<ol>';
-        
-        foreach($stories as $story) {
-            $comment_sql = 'SELECT COUNT(*) as `count` FROM comment WHERE story_id = ?';
-            $comment_stmt = $this->db->prepare($comment_sql);
-            $comment_stmt->execute(array($story['id']));
-            $count = $comment_stmt->fetch(PDO::FETCH_ASSOC);
+
+        foreach ($stories as $story) {
             $content .= '
                 <li>
                 <a class="headline" href="' . $story['url'] . '">' . $story['headline'] . '</a><br />
-                <span class="details">' . $story['created_by'] . ' | <a href="/story/?id=' . $story['id'] . '">' . $count['count'] . ' Comments</a> | 
+                <span class="details">' . $story['created_by'] . ' | <a href="/story/?id=' . $story['id'] . '">' . $story['count'] . ' Comments</a> |
                 ' . date('n/j/Y g:i a', strtotime($story['created_on'])) . '</span>
                 </li>
             ';
         }
-        
+
         $content .= '</ol>';
-        
-        require realpath(__DIR__.'/../../layout.phtml');
+
+        require realpath(__DIR__ . '/../../layout.phtml');
     }
 }
 
