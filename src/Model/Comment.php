@@ -2,7 +2,7 @@
 
 namespace Masterclass\Model;
 
-use PDO;
+use Masterclass\DatabaseLayer\AbstractDb;
 
 /**
  * Comment Model for Masterclass
@@ -12,13 +12,13 @@ class Comment
 {
 
     /**
-     * @var PDO
+     * @var AbstractDb
      */
-    protected $pdo;
+    protected $db;
 
-    public function __construct(PDO $pdo)
+    public function __construct(AbstractDb $db)
     {
-        $this->pdo = $pdo;
+        $this->db = $db;
     }
 
     /**
@@ -28,11 +28,9 @@ class Comment
      */
     public function getCommentsByStoryId($story_id)
     {
-        $comment_sql = 'SELECT * FROM comment WHERE story_id = ?';
-        $comment_stmt = $this->pdo->prepare($comment_sql);
-        $comment_stmt->execute(array($story_id));
-        $comments = $comment_stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $comments;
+        $sql = 'SELECT * FROM comment WHERE story_id = ?';
+        $bind = [$story_id];
+        return $this->db->fetchAll($sql, $bind);
     }
 
     /**
@@ -44,11 +42,7 @@ class Comment
     public function insertComment($username, $story_id, $comment)
     {
         $sql = 'INSERT INTO comment (created_by, created_on, story_id, comment) VALUES (?, NOW(), ?, ?)';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(array(
-            $username,
-            $story_id,
-            $comment,
-        ));
+        $bind = [$username, $story_id, $comment];
+        $this->db->execute($sql, $bind);
     }
 }

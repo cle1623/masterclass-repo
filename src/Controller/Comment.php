@@ -32,7 +32,7 @@ class Comment
         $comment = filter_input(INPUT_POST, 'comment', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
         $this->model_comment->insertComment($_SESSION['username'], $_POST['story_id'], $comment);
 
-        header("Location: /story/?id=" . $_POST['story_id']);
+        header("Location: /story?id=".$_POST['story_id']);
     }
 
 }

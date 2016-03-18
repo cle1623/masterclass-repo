@@ -2,7 +2,7 @@
 
 namespace Masterclass\Model;
 
-use PDO;
+use Masterclass\DatabaseLayer\AbstractDb;
 
 /**
  * Story Model for Masterclass
@@ -12,13 +12,13 @@ final class Story
 {
 
     /**
-     * @var PDO
+     * @var AbstractDb
      */
-    protected $pdo;
+    protected $db;
 
-    public function __construct(PDO $pdo)
+    public function __construct(AbstractDb $db)
     {
-        $this->pdo = $pdo;
+        $this->db = $db;
     }
 
     /**
@@ -34,11 +34,7 @@ final class Story
         FROM story
         ORDER BY story.created_on DESC;
 SQL;
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
-        $stories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $stories;
+        return $this->db->fetchAll($sql);
     }
 
     /**
@@ -48,14 +44,9 @@ SQL;
      */
     public function getStory($story_id)
     {
-        $story_sql = 'SELECT * FROM story WHERE id = ?';
-        $story_stmt = $this->pdo->prepare($story_sql);
-        $story_stmt->execute(array($story_id));
-        if ($story_stmt->rowCount() >= 1) {
-            $story = $story_stmt->fetch(PDO::FETCH_ASSOC);
-            return $story;
-        }
-        return null;
+        $sql = 'SELECT * FROM story WHERE id = ?';
+        $bind = [$story_id];
+        return $this->db->fetchOne($sql, $bind);
     }
 
     /**
@@ -68,14 +59,8 @@ SQL;
     public function insertStory($headline, $url, $username)
     {
         $sql = 'INSERT INTO story (headline, url, created_by, created_on) VALUES (?, ?, ?, NOW())';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(array(
-            $headline,
-            $url,
-            $username,
-        ));
-
-        $id = $this->pdo->lastInsertId();
-        return $id;
+        $bind = [$headline, $url, $username];
+        $this->db->execute($sql, $bind);
+        return $this->db->lastInsertId();
     }
 }

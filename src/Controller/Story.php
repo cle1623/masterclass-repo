@@ -15,7 +15,7 @@ class Story
     /**
      * @var ModelStory
      */
-    protected $modal_story;
+    protected $model_story;
 
     /**
      * @var ModelComment
@@ -62,7 +62,7 @@ class Story
         foreach ($comments as $comment) {
             $content .= '
                 <div class="comment"><span class="comment_details">' . $comment['created_by'] . ' | ' .
-                date('n/j/Y g:i a', strtotime($story['created_on'])) . '</span>
+                date('n/j/Y g:i a', strtotime($comment['created_on'])).'</span>
                 ' . $comment['comment'] . '</div>
             ';
         }
@@ -86,13 +86,13 @@ class Story
                 $error = 'You did not fill in all the fields or the URL did not validate.';
             } else {
                 $id = $this->model_story->insertStory($_POST['headline'], $_POST['url'], $_SESSION['username']);
-                header("Location: /story/?id=$id");
+                header("Location: /story?id=$id");
                 exit;
             }
         }
 
         $content = '
-            <form method="post">
+            <form method="post" action="/story/create/save">
                 ' . $error . '<br />
         
                 <label>Headline:</label> <input type="text" name="headline" value="" /> <br />

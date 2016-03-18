@@ -1,7 +1,7 @@
 <?php
 namespace Masterclass\Model;
 
-use PDO;
+use Masterclass\DatabaseLayer\AbstractDb;
 
 /**
  * User Model for Masterclass
@@ -11,13 +11,13 @@ class User
 {
 
     /**
-     * @var PDO
+     * @var AbstractDb
      */
-    protected $pdo;
+    protected $db;
 
-    public function __construct(PDO $pdo)
+    public function __construct(AbstractDb $db)
     {
-        $this->pdo = $pdo;
+        $this->db = $db;
     }
 
     /**
@@ -28,15 +28,9 @@ class User
      */
     public function insertUser($username, $email, $pw)
     {
-        $params = array(
-            $username,
-            $email,
-            md5($username . $pw),
-        );
-
         $sql = 'INSERT INTO user (username, email, password) VALUES (?, ?, ?)';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
+        $bind = [$username, $email, md5($username.$pw)];
+        $this->db->execute($sql, $bind);
     }
 
     /**
@@ -46,10 +40,9 @@ class User
      */
     public function checkUsernameExists($username)
     {
-        $check_sql = 'SELECT * FROM user WHERE username = ?';
-        $check_stmt = $this->pdo->prepare($check_sql);
-        $check_stmt->execute(array($username));
-        return $check_stmt->rowCount() > 0;
+        $sql = 'SELECT * FROM user WHERE username = ?';
+        $bind = [$username];
+        return ($this->db->rowCount($sql, $bind) > 0);
     }
 
     /**
@@ -60,11 +53,8 @@ class User
     public function updateUserPassword($username, $pw)
     {
         $sql = 'UPDATE user SET password = ? WHERE username = ?';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(array(
-            md5($username . $pw), // THIS IS NOT SECURE.
-            $username,
-        ));
+        $bind = [md5($username.$pw), $username]; // THIS IS NOT SECURE.
+        $this->db->execute($sql, $bind);
     }
 
     /**
@@ -74,11 +64,9 @@ class User
      */
     public function getUser($username)
     {
-        $dsql = 'SELECT * FROM user WHERE username = ?';
-        $stmt = $this->pdo->prepare($dsql);
-        $stmt->execute(array($username));
-        $details = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $details;
+        $sql = 'SELECT * FROM user WHERE username = ?';
+        $bind = [$username];
+        return $this->db->fetchOne($sql, $bind);
     }
 
     /**
@@ -91,11 +79,10 @@ class User
     {
         $password = md5($username . $pw); // THIS IS NOT SECURE. DO NOT USE IN PRODUCTION.
         $sql = 'SELECT * FROM user WHERE username = ? AND password = ? LIMIT 1';
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(array($username, $password));
-        if ($stmt->rowCount() > 0) {
-            $data = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $data;
+        $bind = [$username, $password];
+        $count = $this->db->rowCount($sql, $bind);
+        if ($count > 0) {
+            return $this->db->fetchOne($sql, $bind);
         }
         return null;
     }

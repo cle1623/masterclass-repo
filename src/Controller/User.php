@@ -62,7 +62,7 @@ class User
         // Show the create form
 
         $content = '
-            <form method="post">
+            <form method="post" action="/user/account/create">
                 ' . $error . '<br />
                 <label>Username</label> <input type="text" name="username" value="" /><br />
                 <label>Email</label> <input type="text" name="email" value="" /><br />
@@ -103,7 +103,7 @@ class User
         <label>Username:</label> ' . $details['username'] . '<br />
         <label>Email:</label>' . $details['email'] . ' <br />
         
-         <form method="post">
+         <form method="post" action="/user/account/save">
                 ' . $error . '<br />
             <label>Password</label> <input type="password" name="password" value="" /><br />
             <label>Password Again</label> <input type="password" name="password_check" value="" /><br />
@@ -131,7 +131,7 @@ class User
         }
 
         $content = '
-            <form method="post">
+            <form method="post" action="/user/login/check">
                 ' . $error . '<br />
                 <label>Username</label> <input type="text" name="user" value="" />
                 <label>Password</label> <input type="password" name="pass" value="" />
