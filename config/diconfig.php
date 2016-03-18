@@ -7,11 +7,10 @@ $db = $config['database'];
 
 $dsn = 'mysql:host=' . $db['host'] . ';dbname=' . $db['name'];
 
-$di->params['PDO'] = [
+$di->params['Masterclass\DatabaseLayer\Mysql'] = [
     'dsn' => $dsn,
-    'username' => $db['user'],
-    'passwd' => $db['pass'],
-    'options' => null
+    'user' => $db['user'],
+    'pass' => $db['pass']
 ];
 
 $di->params['Masterclass\MasterController'] = [
@@ -20,15 +19,15 @@ $di->params['Masterclass\MasterController'] = [
 ];
 
 $di->params['Masterclass\Model\Comment'] = [
-    'pdo' => $di->lazyNew('PDO')
+    'db' => $di->lazyNew('Masterclass\DatabaseLayer\Mysql')
 ];
 
 $di->params['Masterclass\Model\Story'] = [
-    'pdo' => $di->lazyNew('PDO')
+    'db' => $di->lazyNew('Masterclass\DatabaseLayer\Mysql')
 ];
 
 $di->params['Masterclass\Model\User'] = [
-    'pdo' => $di->lazyNew('PDO')
+    'db' => $di->lazyNew('Masterclass\DatabaseLayer\Mysql')
 ];
 
 $di->params['Masterclass\Controller\Comment'] = [

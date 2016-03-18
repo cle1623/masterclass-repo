@@ -2,9 +2,9 @@
 
 session_start();
 
-$config = require_once('../config.php');
-require_once '../vendor/autoload.php';
-require_once('../diconfig.php');
-
+$path = realpath(__DIR__.'/..');
+require_once $path.'/vendor/autoload.php';
+$builder = new Aura\Di\ContainerBuilder();
+$di = $builder->newConfiguredInstance(['Masterclass\Configuration\DiConfig', 'Masterclass\Configuration\Routerconfig']);
 $framework = $di->newInstance('Masterclass\MasterController');
 echo $framework->execute();
